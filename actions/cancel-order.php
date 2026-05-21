@@ -1,0 +1,15 @@
+<?php require_once dirname(__DIR__) . '/includes/config.php';
+require_login(['CUSTOMER']);
+$user = current_user();
+$oid = $_POST['order_id'] ?? '';
+$order = fetch_one("SELECT * FROM orders WHERE order_id=:oid AND user_id=:uid", ['oid' => $oid, 'uid' => $user['user_id']]);
+if (!$order) die('Order not found.');
+if (!in_array($order['status'], ['PENDING', 'PAID'], true)) die('This order can no longer be cancelled.');
+$ops = [];
+$ops[] = ["UPDATE orders SET status='CANCELLED' WHERE order_id=:oid", ['oid' => $oid]];
+if ($order['payment_id']) $ops[] = ["UPDATE payment SET status='CANCELLED' WHERE payment_id=:pid", ['pid' => $order['payment_id']]];
+if ($order['status'] === 'PAID') $ops[] = ["UPDATE collection_slot SET current_orders=GREATEST(current_orders-1,0) WHERE collection_slot_id=:sid", ['sid' => $order['collection_slot_id']]];
+$ops[] = ["INSERT INTO order_status_history(history_id,order_id,old_status,new_status,changed_by) VALUES(:hid,:oid,:old,'CANCELLED',:uid)", ['hid' => next_id('order_status_history', 'history_id', 'H'), 'oid' => $oid, 'old' => $order['status'], 'uid' => $user['user_id']]];
+execute_transaction($ops);
+redirect_to('customer/customer-profile.php');
+exit;

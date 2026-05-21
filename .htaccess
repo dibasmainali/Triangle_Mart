@@ -1,0 +1,27 @@
+RewriteEngine On
+RewriteBase /TriangleMart/
+
+# Legacy root URLs → new structure
+RewriteRule ^home\.php$ customer/home.php [R=301,L]
+RewriteRule ^products\.php$ customer/products.php [R=301,L]
+RewriteRule ^product_detail\.php$ customer/product_detail.php [R=301,L]
+RewriteRule ^categories\.php$ customer/categories.php [R=301,L]
+RewriteRule ^shops\.php$ customer/shops.php [R=301,L]
+RewriteRule ^offers\.php$ customer/offers.php [R=301,L]
+RewriteRule ^cart\.php$ customer/cart.php [R=301,L]
+RewriteRule ^checkout\.php$ customer/checkout.php [R=301,L]
+RewriteRule ^wishlist\.php$ customer/wishlist.php [R=301,L]
+RewriteRule ^invoice\.php$ customer/invoice.php [R=301,L]
+RewriteRule ^login\.php$ customer/login.php [R=301,L]
+RewriteRule ^register\.php$ customer/register.php [R=301,L]
+RewriteRule ^customer-profile\.php$ customer/customer-profile.php [R=301,L]
+RewriteRule ^contact-us\.php$ customer/contact-us.php [R=301,L]
+
+RewriteRule ^trader-dashboard\.php$ trader/dashboard.php [R=301,L]
+RewriteRule ^trader-products\.php$ trader/products.php [R=301,L]
+RewriteRule ^trader-discounts\.php$ trader/discounts.php [R=301,L]
+RewriteRule ^trader-profile\.php$ trader/profile.php [R=301,L]
+
+RewriteRule ^actions/paypal-payment\.php$ customer/paypal-payment.php [R=301,L]
+RewriteRule ^actions/order-confirmation\.php$ customer/order-confirmation.php [R=301,L]
+RewriteRule ^actions/payment-cancel\.php$ customer/payment-cancel.php [R=301,L]

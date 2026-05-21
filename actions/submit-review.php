@@ -1,0 +1,15 @@
+<?php require_once dirname(__DIR__) . '/includes/config.php';
+require_login(['CUSTOMER']);
+$user = current_user();
+$pid = $_POST['product_id'] ?? '';
+$oid = $_POST['order_id'] ?? '';
+$rating = (float)($_POST['rating'] ?? 0);
+$comment = trim($_POST['comment'] ?? '');
+if ($rating < 1 || $rating > 5) die('Rating must be between 1 and 5.');
+$ordered = fetch_one("SELECT oi.product_id FROM order_item oi JOIN orders o ON oi.order_id=o.order_id WHERE o.user_id=:uid AND oi.product_id=:pid AND o.order_id=:oid AND o.status IN ('PAID','PROCESSING','READY','COLLECTED')", ['uid' => $user['user_id'], 'pid' => $pid, 'oid' => $oid]);
+if (!$ordered) die('You can only review purchased products.');
+$exists = fetch_one('SELECT review_id FROM review WHERE user_id=:uid AND product_id=:pid', ['uid' => $user['user_id'], 'pid' => $pid]);
+if ($exists) execute_sql("UPDATE review SET order_id=:oid,rating=:rating,product_comment=:comment,review_date=SYSDATE,review_status='VISIBLE' WHERE review_id=:rid", ['oid' => $oid, 'rating' => $rating, 'comment' => $comment, 'rid' => $exists['review_id']]);
+else execute_sql("INSERT INTO review(review_id,user_id,product_id,order_id,rating,product_comment) VALUES(:rid,:uid,:pid,:oid,:rating,:comment)", ['rid' => next_id('review', 'review_id', 'R'), 'uid' => $user['user_id'], 'pid' => $pid, 'oid' => $oid, 'rating' => $rating, 'comment' => $comment]);
+redirect_to('customer/product_detail.php?id=' . urlencode($pid));
+exit;
