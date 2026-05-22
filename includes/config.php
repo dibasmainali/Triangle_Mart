@@ -245,9 +245,32 @@ function ensure_customer_wishlist($userId)
 }
 
 /** Validate collection slot (Wed–Fri, capacity); returns slot row or false. */
-function is_allowed_collection_slot($slotId)
+function is_allowed_collection_slot($slotId, bool $require24Hours = false)
 {
-    $slot = fetch_one("SELECT collection_slot_id, TO_CHAR(collection_date,'DY','NLS_DATE_LANGUAGE=ENGLISH') day_code, time_range, current_orders, max_orders FROM collection_slot WHERE collection_slot_id = :sid AND collection_date >= TRUNC(SYSDATE + 1)", ['sid' => $slotId]);
+    $timeExpr = "(
+        CASE time_range
+            WHEN '10-13' THEN (10/24)
+            WHEN '13-16' THEN (13/24)
+            WHEN '16-19' THEN (16/24)
+            ELSE 0
+        END
+    )";
+    $minDateSql = $require24Hours
+        ? "(collection_date + $timeExpr) >= (SYSDATE + 1)"
+        : "(collection_date + $timeExpr) >= SYSDATE";
+
+    $slot = fetch_one(
+        "SELECT
+            collection_slot_id,
+            TO_CHAR(collection_date,'DY','NLS_DATE_LANGUAGE=ENGLISH') day_code,
+            time_range,
+            current_orders,
+            max_orders
+         FROM collection_slot
+         WHERE collection_slot_id = :sid
+         AND $minDateSql",
+        ['sid' => $slotId]
+    );
     if (!$slot) return false;
     $day = trim($slot['day_code']);
     if (!in_array($day, ['WED', 'THU', 'FRI'], true)) return false;
@@ -274,4 +297,3 @@ function in_wishlist($userId, $productId)
 
 /** @deprecated Use app_url() instead */
 define('ROOT_PREFIX', base_path());
-

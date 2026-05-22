@@ -138,10 +138,6 @@ function order_status_class(string $status): string
                     <p class="account-hero-subtitle">Manage your personal details, password, and order history.</p>
                 </div>
             </div>
-            <div class="account-hero-actions">
-                <a class="account-btn account-btn--ghost" href="<?= app_url('customer/products.php') ?>">Shop</a>
-                <a class="account-btn account-btn--ghost" href="<?= app_url('customer/home.php') ?>">Home</a>
-            </div>
         </div>
 
         <nav class="account-tabs" aria-label="Account sections">

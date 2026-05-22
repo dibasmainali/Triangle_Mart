@@ -109,4 +109,95 @@ function send_contact_email($fname, $lname, $email, $subject, $message)
         return $e->getMessage() . ' ' . ($mail->ErrorInfo ?? '');
     }
 }
+
+function send_password_reset_email($to_email, $to_name, $reset_link)
+{
+    try {
+        $mail = create_mailer();
+
+        $safe_name = htmlspecialchars($to_name, ENT_QUOTES, 'UTF-8');
+        $safe_link = htmlspecialchars($reset_link, ENT_QUOTES, 'UTF-8');
+
+        $mail->addAddress($to_email, $to_name);
+        $mail->isHTML(true);
+        $mail->Subject = 'Reset Your Triangle Mart Password';
+
+        $mail->Body = "
+            <h2>Password reset request</h2>
+            <p>Hello {$safe_name},</p>
+            <p>Click the link below to reset your password:</p>
+            <p><a href=\"{$safe_link}\">Reset my password</a></p>
+            <p>This link expires in 1 hour.</p>
+            <p>If you did not request this, you can ignore this email.</p>
+        ";
+
+        $mail->AltBody =
+            "Password reset request\n\n" .
+            "Hello {$to_name},\n\n" .
+            "Reset your password using this link:\n{$reset_link}\n\n" .
+            "This link expires in 1 hour.\n\n" .
+            "If you did not request this, you can ignore this email.";
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        return $e->getMessage() . ' ' . ($mail->ErrorInfo ?? '');
+    }
+}
+
+function send_order_confirmation_email($to_email, $to_name, $order_id, $invoice_id, $collection_text, $total_amount, $invoice_link, $invoice_html)
+{
+    try {
+        $mail = create_mailer();
+
+        $safe_name = htmlspecialchars($to_name, ENT_QUOTES, 'UTF-8');
+        $safe_order = htmlspecialchars($order_id, ENT_QUOTES, 'UTF-8');
+        $safe_invoice = htmlspecialchars($invoice_id, ENT_QUOTES, 'UTF-8');
+        $safe_collection = htmlspecialchars($collection_text, ENT_QUOTES, 'UTF-8');
+        $safe_invoice_link = htmlspecialchars($invoice_link, ENT_QUOTES, 'UTF-8');
+
+        $mail->addAddress($to_email, $to_name);
+        $mail->isHTML(true);
+        $mail->Subject = "Order Confirmed: {$order_id} - Triangle Mart";
+
+        $mail->Body = "
+            <h2>Order confirmed</h2>
+            <p>Hello {$safe_name},</p>
+            <p>Your order <strong>#{$safe_order}</strong> has been confirmed and placed successfully.</p>
+            <p><strong>Collection:</strong> {$safe_collection}</p>
+            <p><strong>Invoice:</strong> #{$safe_invoice}</p>
+            <p><strong>Total paid:</strong> £" . number_format((float)$total_amount, 2) . "</p>
+            <p>
+                You can view your invoice here (login required):
+                <a href=\"{$safe_invoice_link}\">View Invoice</a>
+            </p>
+            <p>The invoice is also attached to this email.</p>
+        ";
+
+        $mail->AltBody =
+            "Order confirmed\n\n" .
+            "Hello {$to_name},\n\n" .
+            "Your order #{$order_id} has been confirmed and placed successfully.\n" .
+            "Collection: {$collection_text}\n" .
+            "Invoice: #{$invoice_id}\n" .
+            "Total paid: £" . number_format((float)$total_amount, 2) . "\n\n" .
+            "Invoice link (login required): {$invoice_link}\n";
+
+        if ($invoice_html !== '') {
+            $mail->addStringAttachment(
+                $invoice_html,
+                "Invoice-{$order_id}.html",
+                'base64',
+                'text/html'
+            );
+        }
+
+        $mail->send();
+        return true;
+
+    } catch (Exception $e) {
+        return $e->getMessage() . ' ' . ($mail->ErrorInfo ?? '');
+    }
+}
 ?>

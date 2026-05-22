@@ -72,11 +72,19 @@ $slots = fetch_all("
         max_orders,
         current_orders
     FROM collection_slot
-    WHERE collection_date >= TRUNC(SYSDATE + 1)
+    WHERE (collection_date + (
+        CASE time_range
+            WHEN '10-13' THEN (10/24)
+            WHEN '13-16' THEN (13/24)
+            WHEN '16-19' THEN (16/24)
+            ELSE 0
+        END
+    )) >= (SYSDATE + 1)
     AND TO_CHAR(collection_date, 'DY', 'NLS_DATE_LANGUAGE=ENGLISH') IN ('WED','THU','FRI')
     AND time_range IN ('10-13','13-16','16-19')
     AND current_orders < max_orders
     ORDER BY collection_date, time_range
+    FETCH FIRST 8 ROWS ONLY
 ");
 ?>
 
@@ -118,7 +126,7 @@ $slots = fetch_all("
                 <?php endforeach; ?>
 
                 <?php if (!$slots): ?>
-                    <p>No available slots. Collection slots are only Wed, Thu, Fri and must be at least 24 hours after ordering.</p>
+                    <p>No available slots. Collection slots are Wed, Thu, Fri and must start at least 24 hours after ordering.</p>
                 <?php endif; ?>
             </div>
 

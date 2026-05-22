@@ -72,7 +72,7 @@ if (!$items) {
     die('Basket is empty.');
 }
 
-$slotRow = is_allowed_collection_slot($slot);
+$slotRow = is_allowed_collection_slot($slot, true);
 
 if (!$slotRow) {
     die('Selected collection slot is no longer available.');

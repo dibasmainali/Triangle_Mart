@@ -8,6 +8,8 @@
 require_once dirname(__DIR__) . '/includes/config.php';
 
 $error = '';
+$success = $_SESSION['login_flash'] ?? '';
+unset($_SESSION['login_flash']);
 
 // --- Handle login form submission ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,10 +40,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="page-wrap">
         <div class="form-card">
             <div class="logo"><img src="<?= app_url('assets/images/logo3comp.png') ?>" alt="logo"></div>
-            <div class="subtitle">Login to continue</div><?php if ($error): ?><div class="error"><?= e($error) ?></div><?php endif; ?><form method="POST">
+            <div class="subtitle">Login to continue</div><?php if ($success): ?><div class="success"><?= e($success) ?></div><?php endif; ?><?php if ($error): ?><div class="error"><?= e($error) ?></div><?php endif; ?><form method="POST">
                 <div class="form-group"><label>Email Address</label><input name="email" type="email" required></div>
                 <div class="form-group"><label>Password</label><input name="password" type="password" required></div><button class="btn btn-primary" type="submit">Login</button>
             </form>
+            <div class="muted-link"><a href="<?= app_url('customer/password-reset.php') ?>">Forgot password?</a></div>
             <div class="muted-link">Don't have an account? <a href="<?= app_url('customer/register.php') ?>">Register</a></div>
         </div>
     </div>
